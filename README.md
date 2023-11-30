@@ -1,1 +1,6 @@
 # penguin_homework8591
+
+Please find in this repository the R markdown document required for the Penguin Homework. Within this R markdown document is the script for Questions 1 and 2. To test for reproducibility I have shared my repository with account: PNumber8645. 
+
+The link for my repository is ...
+The link for my peers repository is... 
