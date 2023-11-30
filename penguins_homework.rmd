@@ -1,0 +1,262 @@
+---
+title: "Homework Template"
+output:
+  html_document: default
+  pdf_document: default
+date: "2023-10-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Loading the necessary packages
+library(palmerpenguins)
+library(tinytex)
+library(janitor)
+library(ggplot2)
+library(dplyr)
+```
+
+
+*Please Knit your .rmd to a PDF format or HTML and submit that with no identifiers like your name.*
+
+*To create a PDF, first install tinytex and load the package. Then press the Knit arrow and select "Knit to PDF".*
+
+## QUESTION 01: Data Visualisation for Science Communication
+
+### a) Provide your figure here:
+```{r, echo=FALSE, results='hide'}
+#The first thing to do is view the dataset we will be using.There is a section called comments that is full of 'NA' values and text data- we will remove this to make cleaning the data easier.  
+penguins_raw$Comments <- NULL
+penguins_raw
+```
+
+```{r, echo=FALSE}
+#Functions that will be used for cleaning later in the analysis.
+
+#Function to clean the names: removes capitals, spaces, etc
+clean_column_names <- function(penguins_data) {
+  penguins_data %>%
+    clean_names()
+}
+
+# A function to make sure the species names are shortened
+shorten_species <- function(penguins_data) {
+  penguins_data %>%
+    mutate(species = case_when(
+      species == "Adelie Penguin (Pygoscelis adeliae)" ~ "Adelie",
+      species == "Chinstrap penguin (Pygoscelis antarctica)" ~ "Chinstrap",
+      species == "Gentoo penguin (Pygoscelis papua)" ~ "Gentoo"
+    ))
+}
+
+# A function to remove any empty columns or rows
+remove_empty_columns_rows <- function(penguins_data) {
+  penguins_data %>%
+    remove_empty(c("rows", "cols"))
+}
+  
+#Function to remove rows that contain NA values
+  remove_NA <- function(penguins_data) {
+  penguins_data %>%
+    na.omit()
+}
+```
+
+
+```{r bad figure code, echo=FALSE,warning=FALSE}
+
+penguins_names <- clean_column_names(penguins_raw)
+
+#Creating a jitter plot with ggplot
+ggplot(data = penguins_names, aes(x= sex,y = body_mass_g)) +
+  geom_jitter(width = 0.5, size = 1) +
+  labs(title = "Weights of Male and Female Penguins",
+       x = "Sex",
+       y = "Weight (g)") 
+  
+```
+
+### b) Write about how your design choices mislead the reader about the underlying data (200-300 words).
+
+The graph produced is correct in that it shows the real data collected, but it is misleading for several reasons. Firstly, the design choice to have all data points in black is an example of how data can be communicated ineffectively. There isn’t a way of easily distinguishing between male and female data points, which is a particular issue in the centre of the graph where the data points appear to overlap. Secondly, this graph fails to point out the three different species of penguin studied. Different coloured points could be used to show these, but in this case the data is poorly communicated because it could be that all gentoo penguins, for example, are much heavier than the other species. Without displaying this information, it cannot be discerned whether there are differences between species and it doesn’t even communicate the fact that there are different species within the data. 
+  
+The misleading design of this graph means it is important to publish this figure alongside the dataset so other people can access it and be aware of information that is missing from the figure. Sharing the dataset as well as any code used increases the reproducibility of a study, and call allow others to recreate figures and see if they reach the same conclusions, or even extend the work further (Gorgolewski and Poldrack, 2016). It is also important to provide the underlying data as often readers have confidence in articles simply because they are published. There is evidence that readers should be more cautious as over 70% of researchers in a study failed to reproduce another scientist’s work, and more than half failed to reproduce their own (Baker, 2016). Having access to the data can allow readers to try to reproduce results and confirm the authority of them.
+
+------------------------------------------------------------------------
+
+## QUESTION 2: Data Pipeline
+
+*Write a data analysis pipeline in your .rmd RMarkdown file. You should be aiming to write a clear explanation of the steps as well as clear code.*
+
+*Your code should include the steps practiced in the lab session:*
+
+-   *Load the data*
+
+-   *Appropriately clean the data*
+
+-   *Create an Exploratory Figure (**not a boxplot**)*
+
+-   *Save the figure*
+
+-   ***New**: Run a statistical test*
+
+-   ***New**: Create a Results Figure*
+
+-   *Save the figure*
+
+*An exploratory figure shows raw data, such as the distribution of the data. A results figure demonstrates the stats method chosen, and includes the results of the stats test.*
+
+*Between your code, communicate clearly what you are doing and why.*
+
+*Your text should include:*
+
+-   *Introduction*
+
+-   *Hypothesis*
+
+-   *Stats Method*
+
+-   *Results*
+
+-   *Discussion*
+
+-   *Conclusion*
+
+*You will be marked on the following:*
+
+### a) Your code for readability and functionality
+
+### b) Your figures for communication
+
+### c) Your text communication of your analysis
+
+*Below is a template you can use.*
+
+------------------------------------------------------------------------
+
+### Introduction
+The following data analysis looks to explore differences between body masses of penguins from different islands to see if their habitats influence their weight. This is based on the idea that there may be differences in food availability across islands, and therefore we will test whether the body masses of penguins from each island differ significantly from the other islands. 
+
+The first step is to load the data. It is best to load the data and packages in the code script so that anyone using the code can also easily load them.  
+  
+We will then clean the data: this is necessary to make all the column names consistent, remove any empty rows or columns that may otherwise affect our data, and overall make the data easier to manage.  
+  
+The last step within our data exploration is to plot a exploratory figure. This can give us initial ideas about our data and its distribution and can highlight where there may be any anomalies.   
+
+The raw data:
+```{r Data Exploration}
+
+#Loading Palmer Penguins package (data contained within this.)
+
+library(palmerpenguins)
+#View the data
+print(penguins_raw)
+```
+
+  
+The cleaned data:
+
+```{r}
+#Cleaning the data: 
+#The functions used in this code are specified above in the r script. 
+penguins_clean<-penguins_raw %>%
+    clean_column_names() %>%
+    shorten_species() %>%
+    remove_empty_columns_rows%>%
+  remove_NA
+
+penguins_clean
+
+#Creating a scatter plot:
+penguin_scatter<- ggplot(data = penguins_clean, aes(x= island,y = body_mass_g, color= island)) +
+  geom_jitter() +
+  labs(title = "Body Mass of Penguins From Different Islands",
+       x = "Island",
+       y = "Body Mass (g)")+
+  theme_minimal()
+
+penguin_scatter
+
+#Saving the scatter plot
+ggsave("penguin_scatter", plot = penguin_scatter, device = "png")
+
+```
+
+
+
+### Hypothesis
+The null and alternative hypotheses for this analysis, prior to exploring the data were:  
+Null hypothesis (H~0~): There is no significant difference between the average weights of penguins from the different islands. 
+Alternative hypothesis (H~a~): At least one of the island groups of penguins will be significantly different to the other island groups.  
+After exploring the data in the figure, a hypothesis may be that Biscoe penguins are likely to have a higher weight on average. We will now test if there is a significant difference.  
+  
+### Statistical Methods
+We can carry out an ANOVA test for the body mass of penguins on each island which will compare the mean mass of each island.
+```{r Statistics}
+#ANOVA test
+anova_result<-aov(body_mass_g ~ island, data = penguins_clean)
+print(anova_result)
+summary(anova_result)
+
+```
+
+### Results & Discussion
+
+```{r Plotting Results}
+
+penguin_boxplot<- ggplot(penguins_clean, aes(x = island, y = body_mass_g)) +
+  geom_boxplot()
+
+#Saving the box plot
+ggsave("penguin_boxplot", plot = penguin_boxplot, device = "png")
+
+penguin_boxplot
+
+```
+
+
+We can use the boxplot as well as the ANOVA test results to determine whether or not there is a significant difference between the means of body mass across the islands.   
+The boxplot alone hints that the mass of penguins on Biscoe island may be significantly greater than the means of Dream and Torgersen.  
+The ANOVA results can be interpreted and used in conjunction.  
+The ANOVA results give us a P value that is very close to zero. This tells us that it is unlikely that the differences between at least two of the groups cannot be explained by chance, and therefore we can reject the null hypothesis.
+  
+### Conclusion
+We can conclude that there is a significant difference between penguin masses on one island at least compared to the other islands. This may be indicative of differences in environmental conditions, including for example differences in food availability. This is something that could be tested further, a process that would be made easier by publishing this data and code. This would allow others to try to reproduce the initial analysis of results to test if they achieve the same results and conclusions.   
+
+It is however important to note that there may be a bias in the data if more of one penguin species are seen on an island. This is particularly true if the penguin species that is heavier on average is most abundant on Biscoe Island. It may therefore not be the result of differences in environmental conditions, and further analysis and research could understand if this is true. 
+
+
+## QUESTION 3: Open Science
+
+### a) GitHub
+
+*Upload your RProject you created for **Question 2** and any files and subfolders used to GitHub. Do not include any identifiers such as your name. Make sure your GitHub repo is public.*
+
+*GitHub link:*
+
+*You will be marked on your repo organisation and readability.*
+
+### b) Share your repo with a partner, download, and try to run their data pipeline.
+
+*Partner's GitHub link:*
+
+*You **must** provide this so I can verify there is no plagiarism between you and your partner.*
+
+### c) Reflect on your experience running their code. (300-500 words)
+
+-   *What elements of your partner's code helped you to understand their data pipeline?*
+
+-   *Did it run? Did you need to fix anything?*
+
+-   *What suggestions would you make for improving their code to make it more understandable or reproducible, and why?*
+
+-   *If you needed to alter your partner's figure using their code, do you think that would be easy or difficult, and why?*
+
+### d) Reflect on your own code based on your experience with your partner's code and their review of yours. (300-500 words)
+
+-   *What improvements did they suggest, and do you agree?*
+
+-   *What did you learn about writing code for other people?*
